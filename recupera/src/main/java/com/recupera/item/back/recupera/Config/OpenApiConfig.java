@@ -1,4 +1,4 @@
-package com.recupera.item.back.recupera.Config;
+package com.recupera.item.back.recupera.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
