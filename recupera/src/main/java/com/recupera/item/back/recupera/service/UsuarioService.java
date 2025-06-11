@@ -107,4 +107,8 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
         return usuario;
     }
+
+    public Usuario save(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
 }

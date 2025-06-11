@@ -26,6 +26,7 @@ import com.recupera.item.back.recupera.domain.dto.usuario.DTOUpgradeUsuario;
 import com.recupera.item.back.recupera.domain.enums.Perfis;
 import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
 import com.recupera.item.back.recupera.domain.model.usuario.Usuario;
+import com.recupera.item.back.recupera.service.EmailConfirmacaoTokenService;
 import com.recupera.item.back.recupera.service.UsuarioService;
 
 class UsuarioControllerTest {
@@ -33,6 +34,7 @@ class UsuarioControllerTest {
     private UsuarioService usuarioService;
     private PasswordEncoder passwordEncoder;
     private JwtEncoder jwtEncoder;
+    private EmailConfirmacaoTokenService emailConfirmacaoTokenService;
     private UsuarioController usuarioController;
 
     @BeforeEach
@@ -40,7 +42,8 @@ class UsuarioControllerTest {
         usuarioService = mock(UsuarioService.class);
         passwordEncoder = mock(PasswordEncoder.class);
         jwtEncoder = mock(JwtEncoder.class);
-        usuarioController = new UsuarioController(usuarioService, passwordEncoder, jwtEncoder);
+        emailConfirmacaoTokenService = mock(EmailConfirmacaoTokenService.class);
+        usuarioController = new UsuarioController(usuarioService, passwordEncoder, jwtEncoder, emailConfirmacaoTokenService);
     }
 
     @Test

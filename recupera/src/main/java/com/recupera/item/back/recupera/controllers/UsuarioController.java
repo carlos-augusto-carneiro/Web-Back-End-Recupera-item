@@ -3,7 +3,6 @@ package com.recupera.item.back.recupera.controllers;
 import java.time.Instant;
 import java.util.List;
 
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,18 +10,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOCreatedUsuario;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginRequest;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginResponse;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOUpgradeUsuario;
+import com.recupera.item.back.recupera.service.EmailConfirmacaoTokenService;
 import com.recupera.item.back.recupera.service.UsuarioService;
+import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,11 +38,13 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
+    private final EmailConfirmacaoTokenService emailConfirmacaoTokenService;
 
-    public UsuarioController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder) {
+    public UsuarioController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtEncoder jwtEncoder, EmailConfirmacaoTokenService emailConfirmacaoTokenService) {
         this.usuarioService = usuarioService;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
+        this.emailConfirmacaoTokenService = emailConfirmacaoTokenService;
     }
 
     @Transactional
@@ -68,7 +74,8 @@ public class UsuarioController {
     @PostMapping("/createdUser")
     public ResponseEntity<Void> createdUser(@RequestBody DTOCreatedUsuario usuario) {
         try {
-            usuarioService.createUsuario(usuario);
+            var createdUsuario = usuarioService.createUsuario(usuario);
+            emailConfirmacaoTokenService.enviarConfirmacaoEmail(createdUsuario);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -162,6 +169,29 @@ public class UsuarioController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @Transactional
+    @Operation(summary = "Confirmar email", description = "Confirma o email do usuário usando o token")
+    @GetMapping("/confirmar")
+    public ResponseEntity<String> confirmarEmail(@RequestParam String token) {
+        try {
+            var emailToken = emailConfirmacaoTokenService.findByToken(token)
+                .orElseThrow(() -> new UsuarioException("Token inválido"));
+
+            if (emailToken.estaExpirado()) {
+                throw new UsuarioException("Token expirado");
+            }
+
+            var usuario = emailToken.getUsuario();
+            usuario.setEmailConfirmado(true);
+            usuarioService.save(usuario);
+            emailConfirmacaoTokenService.delete(emailToken);
+
+            return ResponseEntity.ok("Email confirmado com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

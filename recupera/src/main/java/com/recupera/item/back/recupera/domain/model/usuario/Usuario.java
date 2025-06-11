@@ -11,6 +11,7 @@ import com.recupera.item.back.recupera.domain.enums.Perfis;
 import com.recupera.item.back.recupera.domain.exception.usuario.SenhaFracaException;
 import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,6 +37,9 @@ public class Usuario {
     public String email;
 
     public String senha;
+
+    @Column(name = "email_confirmado")
+    public boolean emailConfirmado = false;
 
     @Enumerated(EnumType.STRING)
     public Perfis perfil;
@@ -178,5 +182,12 @@ public class Usuario {
         this.perfil = perfil;
     }
 
+    public boolean isEmailConfirmado() {
+        return emailConfirmado;
+    }
+
+    public void setEmailConfirmado(boolean emailConfirmado) {
+        this.emailConfirmado = emailConfirmado;
+    }
 
 }
