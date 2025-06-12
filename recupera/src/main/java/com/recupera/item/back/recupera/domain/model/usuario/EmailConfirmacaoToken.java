@@ -9,7 +9,27 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 
-
+/**
+ * Entidade que representa um token de confirmação de e-mail para um usuário.
+ * <p>
+ * Este token é utilizado para validar o endereço de e-mail do usuário durante o processo
+ * de cadastro ou recuperação de conta. Possui uma data de expiração e está associado a um usuário.
+ * </p>
+ *
+ * Campos:
+ * <ul>
+ *   <li>id - Identificador único do token.</li>
+ *   <li>token - Valor do token gerado aleatoriamente.</li>
+ *   <li>dataExpiracao - Data e hora de expiração do token.</li>
+ *   <li>usuario - Usuário associado ao token.</li>
+ * </ul>
+ *
+ * Métodos principais:
+ * <ul>
+ *   <li>{@link #criarPara(Usuario)}: Cria um novo token para o usuário informado, com validade de 24 horas.</li>
+ *   <li>{@link #estaExpirado()}: Verifica se o token já expirou.</li>
+ * </ul>
+*/
 @Entity
 public class EmailConfirmacaoToken {
 

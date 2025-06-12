@@ -22,6 +22,27 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
+
+/**
+ * Representa a entidade Usuario do sistema.
+ * 
+ * <p>Esta classe mapeia o usuário na base de dados, contendo informações como nome, email, senha,
+ * perfil e status de confirmação de email. Inclui métodos para validação de dados, autenticação,
+ * alteração de senha e verificação de perfil.</p>
+ *
+ * <ul>
+ *   <li>Valida nome, email e senha conforme regras de negócio.</li>
+ *   <li>Permite autenticação via senha simples ou usando PasswordEncoder.</li>
+ *   <li>Permite promoção de perfil, desde que seja um perfil permitido.</li>
+ *   <li>Inclui métodos utilitários para verificar o perfil do usuário.</li>
+ *   <li>Inclui métodos para validação de força de senha e formato de email.</li>
+ * </ul>
+ *
+ * <p>Exceções personalizadas são lançadas em caso de dados inválidos.</p>
+ *
+ * @author SeuNome
+ * @since 1.0
+ */
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
@@ -39,7 +60,7 @@ public class Usuario {
     public String senha;
 
     @Column(name = "email_confirmado")
-    public boolean emailConfirmado = false;
+    public boolean emailConfirmado;
 
     @Enumerated(EnumType.STRING)
     public Perfis perfil;
@@ -50,16 +71,17 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(Long id, String nome, String email, String senha, Perfis perfil) {
+    public Usuario(Long id, String nome, String email, String senha, Perfis perfil, boolean emailConfirmado) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.senha = senha;
         this.perfil = perfil != null ? perfil : Perfis.Aluno;
+        this.emailConfirmado = false;
     }
 
     public static Usuario fromDTO(DTOCreatedUsuario dto) {
-        return new Usuario(null, dto.nome(), dto.email(), dto.senha(), dto.perfil());
+        return new Usuario(null, dto.nome(), dto.email(), dto.senha(), dto.perfil(), false);
     }
 
     public void promover(Perfis novoPerfil) {
