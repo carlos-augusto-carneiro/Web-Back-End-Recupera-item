@@ -2,6 +2,7 @@ package com.recupera.item.back.recupera.service;
 
 import java.util.Optional;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.recupera.item.back.recupera.domain.model.usuario.EmailConfirmacaoToken;
@@ -38,16 +39,18 @@ public class EmailConfirmacaoTokenService {
 
     private final IEmailConfirmacaoTokenRepository emailConfirmacaoTokenRepository;
     private final EmailService emailService;
+    private final CorpoEmailService corpoEmailService;
 
-    public EmailConfirmacaoTokenService(IEmailConfirmacaoTokenRepository emailConfirmacaoTokenRepository, EmailService emailService) {
+    public EmailConfirmacaoTokenService(IEmailConfirmacaoTokenRepository emailConfirmacaoTokenRepository, EmailService emailService, CorpoEmailService corpoEmailService) {
         this.emailConfirmacaoTokenRepository = emailConfirmacaoTokenRepository;
         this.emailService = emailService;
+        this.corpoEmailService = corpoEmailService;
     }
 
+    @Async("taskExecutor")
     public void enviarConfirmacaoEmail(Usuario usuario) {
         var token = EmailConfirmacaoToken.criarPara(usuario);
         
-        // Verifica se já existe um token para este usuário
         emailConfirmacaoTokenRepository.findByUsuario(usuario)
             .ifPresent(existingToken -> {
                 existingToken.setToken(token.getToken());
@@ -55,7 +58,6 @@ public class EmailConfirmacaoTokenService {
                 emailConfirmacaoTokenRepository.save(existingToken);
             });
             
-        // Se não existir, salva o novo token
         if (!emailConfirmacaoTokenRepository.existsByUsuario(usuario)) {
             emailConfirmacaoTokenRepository.save(token);
         }
@@ -63,8 +65,10 @@ public class EmailConfirmacaoTokenService {
         if (usuario.getEmail() == null || usuario.getEmail().isEmpty()) {
             throw new IllegalArgumentException("O email do usuário não pode ser nulo ou vazio.");
         }
+
         String link = "http://localhost:8080/confirmar?token=" + token.getToken();
-        emailService.enviarEmail(usuario.getEmail(), "Confirme seu e-mail", "Clique no link para confirmar: " + link);
+        String corpoEmail = corpoEmailService.gerarCorpoEmailConfirmacao(link);
+        emailService.enviarEmail(usuario.getEmail(), "Confirme seu e-mail", corpoEmail);
     }
 
     public Optional<EmailConfirmacaoToken> findByToken(String token) {

@@ -71,6 +71,10 @@ public class Usuario {
     public Usuario() {
     }
 
+    public Usuario(Long id, String nome, String email, String senha, Perfis perfil) {
+        this(id, nome, email, senha, perfil, false);
+    }
+
     public Usuario(Long id, String nome, String email, String senha, Perfis perfil, boolean emailConfirmado) {
         this.id = id;
         this.nome = nome;

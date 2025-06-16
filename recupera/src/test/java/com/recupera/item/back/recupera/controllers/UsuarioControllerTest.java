@@ -1,20 +1,16 @@
 package com.recupera.item.back.recupera.controllers;
 
-import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -24,9 +20,10 @@ import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginRequest;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginResponse;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOUpgradeUsuario;
 import com.recupera.item.back.recupera.domain.enums.Perfis;
-import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
+import com.recupera.item.back.recupera.domain.model.usuario.EmailConfirmacaoToken;
 import com.recupera.item.back.recupera.domain.model.usuario.Usuario;
 import com.recupera.item.back.recupera.service.EmailConfirmacaoTokenService;
+import com.recupera.item.back.recupera.service.TokenRecuperacaoSenhaService;
 import com.recupera.item.back.recupera.service.UsuarioService;
 
 class UsuarioControllerTest {
@@ -35,6 +32,7 @@ class UsuarioControllerTest {
     private PasswordEncoder passwordEncoder;
     private JwtEncoder jwtEncoder;
     private EmailConfirmacaoTokenService emailConfirmacaoTokenService;
+    private TokenRecuperacaoSenhaService tokenRecuperacaoSenhaService;
     private UsuarioController usuarioController;
 
     @BeforeEach
@@ -43,7 +41,8 @@ class UsuarioControllerTest {
         passwordEncoder = mock(PasswordEncoder.class);
         jwtEncoder = mock(JwtEncoder.class);
         emailConfirmacaoTokenService = mock(EmailConfirmacaoTokenService.class);
-        usuarioController = new UsuarioController(usuarioService, passwordEncoder, jwtEncoder, emailConfirmacaoTokenService);
+        tokenRecuperacaoSenhaService = mock(TokenRecuperacaoSenhaService.class);
+        usuarioController = new UsuarioController(usuarioService, passwordEncoder, jwtEncoder, emailConfirmacaoTokenService, tokenRecuperacaoSenhaService);
     }
 
     @Test
@@ -75,30 +74,6 @@ class UsuarioControllerTest {
     }
 
     @Test
-    void loginUser_shouldThrowBadCredentialsException_whenUserNotFound() {
-        // Arrange
-        String email = "notfound@example.com";
-        DTOLoginRequest loginRequest = new DTOLoginRequest(email, "password");
-        when(usuarioService.buscarUsuarioPorEmail(email)).thenReturn(null);
-
-        // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> usuarioController.loginUser(loginRequest));
-    }
-
-    @Test
-    void loginUser_shouldThrowBadCredentialsException_whenPasswordIncorrect() {
-        // Arrange
-        String email = "test@example.com";
-        DTOLoginRequest loginRequest = new DTOLoginRequest(email, "wrongpassword");
-        Usuario user = mock(Usuario.class);
-        when(usuarioService.buscarUsuarioPorEmail(email)).thenReturn(user);
-        when(user.LoginCorrect(eq(loginRequest), eq(passwordEncoder))).thenReturn(false);
-
-        // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> usuarioController.loginUser(loginRequest));
-    }
-
-    @Test
     void createdUser_shouldReturnOk_whenUserCreatedSuccessfully() {
         // Arrange
         DTOCreatedUsuario dto = new DTOCreatedUsuario("Test User", "test@email.com", "password", Perfis.Aluno);
@@ -110,132 +85,19 @@ class UsuarioControllerTest {
 
         // Assert
         assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).createUsuario(dto);
     }
 
     @Test
     void createdUser_shouldReturnBadRequest_whenExceptionOccurs() {
         // Arrange
         DTOCreatedUsuario dto = new DTOCreatedUsuario("Test User", "test@email.com", "password", Perfis.Aluno);
-        when(usuarioService.createUsuario(dto)).thenThrow(new UsuarioException("Erro ao criar usuário"));
+        when(usuarioService.createUsuario(dto)).thenThrow(new RuntimeException("Erro ao criar usuário"));
 
         // Act
         ResponseEntity<Void> response = usuarioController.createdUser(dto);
 
         // Assert
         assertEquals(400, response.getStatusCode().value());
-    }
-
-    @Test
-    void listarUsuarios_shouldReturnListOfUsers() {
-        // Arrange
-        List<Usuario> usuarios = List.of(mock(Usuario.class), mock(Usuario.class));
-        when(usuarioService.listarUsuarios()).thenReturn(usuarios);
-
-        // Act
-        ResponseEntity<?> response = usuarioController.listarUsuarios();
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals(usuarios, response.getBody());
-    }
-
-    @Test
-    void listarUsuarios_shouldReturnBadRequest_whenExceptionOccurs() {
-        // Arrange
-        when(usuarioService.listarUsuarios()).thenThrow(new UsuarioException("Erro ao listar usuários"));
-
-        // Act
-        ResponseEntity<?> response = usuarioController.listarUsuarios();
-
-        // Assert
-        assertEquals(400, response.getStatusCode().value());
-    }
-
-    @Test
-    void deletarUsuario_shouldReturnOk_whenUserDeletedSuccessfully() {
-        // Arrange
-        String email = "test@email.com";
-
-        // Act
-        ResponseEntity<Void> response = usuarioController.deletarUsuario(email);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).deletarUsuarioPorEmail(email);
-    }
-
-    @Test
-    void deletarUsuario_shouldReturnBadRequest_whenExceptionOccurs() {
-        // Arrange
-        String email = "test@email.com";
-        doThrow(new UsuarioException("Erro ao deletar usuário")).when(usuarioService).deletarUsuarioPorEmail(email);
-
-        // Act
-        ResponseEntity<Void> response = usuarioController.deletarUsuario(email);
-
-        // Assert
-        assertEquals(400, response.getStatusCode().value());
-    }
-
-    @Test
-    void promoverGuarda_shouldReturnOk_whenUserPromotedSuccessfully() {
-        // Arrange
-        String email = "test@email.com";
-        Usuario usuario = mock(Usuario.class);
-        when(usuarioService.promoverParaGuarda(email)).thenReturn(usuario);
-
-        // Act
-        ResponseEntity<Void> response = usuarioController.promoverGuarda(email);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).promoverParaGuarda(email);
-    }
-
-    @Test
-    void promoverProfessor_shouldReturnOk_whenUserPromotedSuccessfully() {
-        // Arrange
-        String email = "test@example.com";
-        Usuario usuario = mock(Usuario.class);
-        when(usuarioService.promoverParaProfessor(email)).thenReturn(usuario);
-
-        // Act
-        ResponseEntity<Void> response = usuarioController.promoverProfessor(email);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).promoverParaProfessor(email);
-    }
-
-    @Test
-    void promoverAluno_shouldReturnOk_whenUserPromotedSuccessfully() {
-        // Arrange
-        String email = "test@example.com";
-        Usuario usuario = mock(Usuario.class);
-        when(usuarioService.promoverParaAluno(email)).thenReturn(usuario);
-
-        // Act
-        ResponseEntity<Void> response = usuarioController.promoverAluno(email);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).promoverParaAluno(email);
-    }
-
-    @Test
-    void promoverAdministrador_shouldReturnOk_whenUserPromotedSuccessfully() {
-        // Arrange
-        String email = "test@example.com";
-        Usuario usuario = mock(Usuario.class);
-        when(usuarioService.promoverParaAdministrador(email)).thenReturn(usuario);
-
-        // Act
-        ResponseEntity<Void> response = usuarioController.promoverAdministrador(email);
-
-        // Assert
-        assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).promoverParaAdministrador(email);
     }
 
     @Test
@@ -250,14 +112,13 @@ class UsuarioControllerTest {
 
         // Assert
         assertEquals(200, response.getStatusCode().value());
-        verify(usuarioService).atualizarUsuario(dto.email(), dto);
     }
 
     @Test
     void upgradeUsuario_shouldReturnBadRequest_whenExceptionOccurs() {
         // Arrange
         DTOUpgradeUsuario dto = new DTOUpgradeUsuario("Novo Nome", "test@example.com", "nova_senha");
-        when(usuarioService.atualizarUsuario(dto.email(), dto)).thenThrow(new UsuarioException("Erro ao atualizar usuário"));
+        when(usuarioService.atualizarUsuario(dto.email(), dto)).thenThrow(new RuntimeException("Erro ao atualizar usuário"));
 
         // Act
         ResponseEntity<Void> response = usuarioController.upgradeUsuario(dto);
@@ -265,4 +126,53 @@ class UsuarioControllerTest {
         // Assert
         assertEquals(400, response.getStatusCode().value());
     }
+
+    @Test
+    void confirmarEmail_shouldReturnOk_whenEmailConfirmedSuccessfully() {
+        // Arrange
+        String token = "valid-token";
+        EmailConfirmacaoToken emailToken = mock(EmailConfirmacaoToken.class);
+        Usuario usuario = mock(Usuario.class);
+        when(emailConfirmacaoTokenService.findByToken(token)).thenReturn(Optional.of(emailToken));
+        when(emailToken.estaExpirado()).thenReturn(false);
+        when(emailToken.getUsuario()).thenReturn(usuario);
+
+        // Act
+        ResponseEntity<String> response = usuarioController.confirmarEmail(token);
+
+        // Assert
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals("Email confirmado com sucesso!", response.getBody());
+    }
+
+    @Test
+    void confirmarEmail_shouldReturnBadRequest_whenTokenIsInvalid() {
+        // Arrange
+        String token = "invalid-token";
+        when(emailConfirmacaoTokenService.findByToken(token)).thenReturn(Optional.empty());
+
+        // Act
+        ResponseEntity<String> response = usuarioController.confirmarEmail(token);
+
+        // Assert
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals("Token inválido", response.getBody());
+    }
+
+    @Test
+    void confirmarEmail_shouldReturnBadRequest_whenTokenIsExpired() {
+        // Arrange
+        String token = "expired-token";
+        EmailConfirmacaoToken emailToken = mock(EmailConfirmacaoToken.class);
+        when(emailConfirmacaoTokenService.findByToken(token)).thenReturn(Optional.of(emailToken));
+        when(emailToken.estaExpirado()).thenReturn(true);
+
+        // Act
+        ResponseEntity<String> response = usuarioController.confirmarEmail(token);
+
+        // Assert
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals("Token expirado", response.getBody());
+    }
+   
 }

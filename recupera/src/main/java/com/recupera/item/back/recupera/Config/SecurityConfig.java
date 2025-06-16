@@ -46,6 +46,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/createdUser").permitAll()
+                .requestMatchers(HttpMethod.POST, "/esqueci-senha").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/redefinir-senha").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated())

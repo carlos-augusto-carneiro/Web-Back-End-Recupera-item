@@ -1,13 +1,19 @@
 package com.recupera.item.back.recupera.domain.model.usuario;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.recupera.item.back.recupera.domain.enums.Perfis;
 import com.recupera.item.back.recupera.domain.exception.usuario.SenhaFracaException;
 import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 
 
