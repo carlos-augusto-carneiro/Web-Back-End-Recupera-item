@@ -62,6 +62,7 @@ public class UsuarioController {
                                 .issuer("recupera-item")
                                 .subject(user.getId().toString())
                                 .claim("authorities", List.of(user.getPerfil().name()))
+                                .claim("id", user.getId())
                                 .claim("email", user.getEmail())
                                 .expiresAt(now.plusSeconds(expiresIn))
                                 .issuedAt(now)
