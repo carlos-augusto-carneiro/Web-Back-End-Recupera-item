@@ -30,14 +30,19 @@ public class Item {
     public String nome;
     public String descricao;
 
-    public boolean devolvido;
+    public Boolean devolvido;
+
+    public String caminhoImagem;
 
     public Item() {
         this.dataCriacao = new Date();
         this.devolvido = false;
     }
 
-    public Item(Usuario usuario, String nome, String descricao) {
+    public Item(Usuario usuario, String nome, String descricao, String caminhoImagem) {
+        if (caminhoImagem != null && caminhoImagem.isEmpty()) {
+            throw new IllegalArgumentException("Caminho da imagem não pode ser vazio");
+        }
         if (usuario == null) {
             throw new IllegalArgumentException("Usuário não pode ser nulo");
         }
@@ -51,6 +56,7 @@ public class Item {
         this.nome = nome;
         this.descricao = descricao;
         this.dataCriacao = new Date();
+        this.caminhoImagem = caminhoImagem; 
         this.devolvido = false;
     }
 
@@ -59,6 +65,17 @@ public class Item {
             throw new IllegalStateException("Item já foi devolvido");
         }
         this.devolvido = true;
+    }
+
+    public String getCaminhoImagem() {
+        return caminhoImagem;
+    }
+    
+    public void setCaminhoImagem(String caminhoImagem) {
+        if (caminhoImagem != null && caminhoImagem.isEmpty()) {
+            throw new IllegalArgumentException("Caminho da imagem não pode ser vazio");
+        }
+        this.caminhoImagem = caminhoImagem;
     }
 
     public long getId() {
@@ -101,11 +118,11 @@ public class Item {
         this.descricao = descricao;
     }
 
-    public boolean isDevolvido() {
+    public Boolean isDevolvido() {
         return devolvido;
     }
 
-    public void setDevolvido(boolean devolvido) {
+    public void setDevolvido(Boolean devolvido) {
         this.devolvido = devolvido;
     }
 

@@ -38,7 +38,7 @@ class UsuarioServiceTest {
 
     @Test
     void createUsuario_shouldCreateAndSaveUser() {
-        DTOCreatedUsuario dto = new DTOCreatedUsuario("Test User", "test@email.com", "password", Perfis.Aluno);
+        DTOCreatedUsuario dto = new DTOCreatedUsuario("Test User", "test@email.com", "Senha123!", Perfis.Aluno);
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Usuario result = usuarioService.createUsuario(dto);
@@ -202,14 +202,14 @@ class UsuarioServiceTest {
         Usuario usuario = new Usuario();
         usuario.setNome("Nome Antigo");
         usuario.setEmail(email);
-        usuario.setSenha("senha_antiga");
+        usuario.setSenha("Senha123!");
         usuario.setPerfil(Perfis.Aluno);
 
         when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuario));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(passwordEncoder.encode("nova_senha")).thenReturn("senha_codificada");
-
-        DTOUpgradeUsuario dto = new DTOUpgradeUsuario("Novo Nome", email, "nova_senha");
+        when(passwordEncoder.encode("Senha12443!")).thenReturn("senha_codificada");
+        
+        DTOUpgradeUsuario dto = new DTOUpgradeUsuario("Novo Nome", email, "Senha12443!");
         Usuario result = usuarioService.atualizarUsuario(email, dto);
 
         assertEquals("Novo Nome", result.getNome());

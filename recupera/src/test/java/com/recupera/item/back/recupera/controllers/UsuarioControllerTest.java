@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOCreatedUsuario;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginRequest;
@@ -49,13 +51,14 @@ class UsuarioControllerTest {
     void loginUser_shouldReturnJwt_whenCredentialsAreCorrect() {
         // Arrange
         String email = "test@example.com";
-        String password = "password";
+        String password = "Senha123!";
         DTOLoginRequest loginRequest = new DTOLoginRequest(email, password);
 
         Usuario user = mock(Usuario.class);
         when(usuarioService.buscarUsuarioPorEmail(email)).thenReturn(user);
         when(user.LoginCorrect(eq(loginRequest), eq(passwordEncoder))).thenReturn(true);
         when(user.getId()).thenReturn(1L);
+        when(user.getEmail()).thenReturn(email);
         when(user.getPerfil()).thenReturn(Perfis.Aluno);
 
         var jwtTokenValue = "jwt-token";
@@ -76,7 +79,7 @@ class UsuarioControllerTest {
     @Test
     void createdUser_shouldReturnOk_whenUserCreatedSuccessfully() {
         // Arrange
-        DTOCreatedUsuario dto = new DTOCreatedUsuario("Test User", "test@email.com", "password", Perfis.Aluno);
+        DTOCreatedUsuario dto = new DTOCreatedUsuario("Test User", "test@email.com", "Senha1234!", Perfis.Aluno);
         Usuario usuario = mock(Usuario.class);
         when(usuarioService.createUsuario(dto)).thenReturn(usuario);
 
@@ -103,9 +106,18 @@ class UsuarioControllerTest {
     @Test
     void upgradeUsuario_shouldReturnOk_whenUserUpdatedSuccessfully() {
         // Arrange
-        DTOUpgradeUsuario dto = new DTOUpgradeUsuario("Novo Nome", "test@example.com", "nova_senha");
+        DTOUpgradeUsuario dto = new DTOUpgradeUsuario("Novo Nome", "test@example.com", "Senha1235!");
         Usuario usuario = mock(Usuario.class);
         when(usuarioService.atualizarUsuario(dto.email(), dto)).thenReturn(usuario);
+        when(usuario.getNome()).thenReturn("Novo Nome");
+        when(usuario.getSenha()).thenReturn("Senha1235!");
+        when(usuario.getEmail()).thenReturn("test@example.com");
+        when(usuario.getPerfil()).thenReturn(Perfis.Aluno);
+
+        // Simule o usuário autenticado
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(dto.email(), "Senha1235!")
+        );
 
         // Act
         ResponseEntity<Void> response = usuarioController.upgradeUsuario(dto);

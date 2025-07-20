@@ -32,7 +32,7 @@ public class ItemService {
         return itemRepository.findByDevolvido(true);
     }
 
-    public Item adicionarItem(CriarItemDto itemDto, long usuarioIdLogado, String perfil) {
+    public Item adicionarItem(CriarItemDto itemDto, long usuarioIdLogado, String perfil, String url) {
         if (itemDto == null || itemDto.nome() == null || itemDto.nome().isEmpty()) {
             throw new IllegalArgumentException("Dados do item inválidos");
         }
@@ -49,8 +49,8 @@ public class ItemService {
         Usuario usuario = usuarioRepository.findById(usuarioIdLogado)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        Item novoItem = new Item(usuario, itemDto.nome(), itemDto.descricao());
-
+        Item novoItem = new Item(usuario, itemDto.nome(), itemDto.descricao(), url);
+        
         return itemRepository.save(novoItem);
     }    
 

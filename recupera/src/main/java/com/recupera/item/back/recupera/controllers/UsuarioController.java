@@ -62,6 +62,7 @@ public class UsuarioController {
                                 .issuer("recupera-item")
                                 .subject(user.getId().toString())
                                 .claim("authorities", List.of(user.getPerfil().name()))
+                                .claim("perfil", user.getPerfil().name())
                                 .claim("id", user.getId())
                                 .claim("email", user.getEmail())
                                 .expiresAt(now.plusSeconds(expiresIn))
@@ -95,6 +96,7 @@ public class UsuarioController {
             usuarioService.atualizarUsuario(email, request);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            e.printStackTrace(); // Adicione esta linha
             return ResponseEntity.badRequest().build();
         }
     }

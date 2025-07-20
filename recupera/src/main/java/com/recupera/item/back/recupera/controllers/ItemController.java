@@ -9,19 +9,29 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ModelAttribute;
+
+import com.recupera.item.back.recupera.config.GoogleDriveConfig;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import com.recupera.item.back.recupera.domain.dto.usuario.CriarItemDto;
 import com.recupera.item.back.recupera.domain.model.usuario.Item;
 import com.recupera.item.back.recupera.service.ItemService;
 
+import io.swagger.v3.oas.annotations.Operation;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/itens")
@@ -31,7 +41,12 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
+    @Autowired
+    private GoogleDriveConfig googleDriveService;
+
     @GetMapping("/usuario/{usuarioId}")
+    @Operation(summary = "Listar itens por usuário", description = "Lista todos os itens associados a um usuário específico")
+    @PreAuthorize("hasAuthority('Administrador')")
     public ResponseEntity<?> listarItensPorUsuario(@PathVariable long usuarioId) {
         try {
             return ResponseEntity.ok(itemService.listarItensPorUsuario(usuarioId));
@@ -41,6 +56,7 @@ public class ItemController {
     }
 
     @GetMapping("/nao-devolvidos")
+    @Operation(summary = "Listar itens não devolvidos", description = "Lista todos os itens que ainda não foram devolvidos")
     public ResponseEntity<?> listarItensNaoDevolvidos() {
         try {
             return ResponseEntity.ok(itemService.listarItensNaoDevolvidos());
@@ -50,6 +66,7 @@ public class ItemController {
     }
 
     @GetMapping("/devolvidos")
+    @Operation(summary = "Listar itens devolvidos", description = "Lista todos os itens que já foram devolvidos")
     public ResponseEntity<?> listarItensDevolvidos() {
         try {
             return ResponseEntity.ok(itemService.listarItensDevolvidos());
@@ -59,6 +76,7 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
+    @Operation(summary = "Buscar item por ID", description = "Busca um item específico pelo seu ID")
     @PreAuthorize("hasAuthority('Administrador')")
     public ResponseEntity<?> buscarItemPorId(@PathVariable long itemId) {
         try {
@@ -71,6 +89,7 @@ public class ItemController {
     }
 
     @GetMapping("/buscar")
+    @Operation(summary = "Buscar itens por nome", description = "Busca itens pelo nome fornecido")
     public ResponseEntity<?> buscarItensPorNome(@RequestParam String nome) {
         try {
             return ResponseEntity.ok(itemService.buscarItensPorNome(nome));
@@ -79,22 +98,36 @@ public class ItemController {
         }
     }
 
-    @PostMapping
+    @RequestMapping(path = "/adicionar", method=RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "Adicionar item",
+        description = "Adiciona um novo item ao sistema"
+    )
     @PreAuthorize("hasAuthority('Administrador') or hasAuthority('Professor') or hasAuthority('Guarda')")
-    @Tag(name = "Item", description = "Adiciona um novo item ao sistema")
-    public ResponseEntity<?> adicionarItem(@RequestBody CriarItemDto itemDto,
-                                            Authentication authentication,
-                                               @RequestParam String perfil) {
+    public ResponseEntity<?> adicionarItem(
+        @RequestPart("file") MultipartFile file,
+        @RequestPart("itemDto") String itemDtoJson,
+        Authentication authentication
+    ) {
         try {
+            System.out.println("itemDtoJson: " + itemDtoJson);
+            System.out.println("file: " + (file != null ? file.getOriginalFilename() : "null"));
+            ObjectMapper mapper = new ObjectMapper();
+            CriarItemDto itemDto = mapper.readValue(itemDtoJson, CriarItemDto.class);
+            String url = googleDriveService.uploadFile(file, "1HtdhlodxJXfjAnvo06w1tGBiPFzgMST_");
             Long usuarioIdLogado = null;
+            String perfil;
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
                 usuarioIdLogado = jwtAuth.getToken().getClaim("id");
+                perfil = jwtAuth.getToken().getClaim("perfil");
             } else {
                 usuarioIdLogado = 1L;
+                perfil = "Administrador";
             }
             System.out.println("Perfil: " + perfil);
             System.out.println("Usuário ID Logado: " + usuarioIdLogado);
-            Item item = itemService.adicionarItem(itemDto, usuarioIdLogado, perfil);
+            System.out.println("caminho" + url);
+            Item item = itemService.adicionarItem(itemDto, usuarioIdLogado, perfil, url);
             return ResponseEntity.ok(item);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -102,17 +135,21 @@ public class ItemController {
     }
 
     @PutMapping("/{itemId}")
+    @Operation(summary = "Atualizar item", description = "Atualiza as informações de um item existente")
     @PreAuthorize("hasAuthority('Administrador') or hasAuthority('Professor') or hasAuthority('Guarda')")
     public ResponseEntity<?> atualizarItem(@PathVariable long itemId,
                                               @RequestBody CriarItemDto itemDto
                                               ,Authentication authentication
-                                              ,@RequestParam String perfil) {
+                                            ) {
         try {
             Long usuarioIdLogado = null;
+            String perfil;
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
                 usuarioIdLogado = jwtAuth.getToken().getClaim("id");
+                perfil = jwtAuth.getToken().getClaim("perfil");
             } else {
                 usuarioIdLogado = 1L;
+                perfil = "Administrador";
             }
             Item item = itemService.atualizarItem(itemId, itemDto, usuarioIdLogado, perfil);
             return ResponseEntity.ok(item);
@@ -124,17 +161,20 @@ public class ItemController {
     }
 
     @PutMapping("/{itemId}/devolver")
+    @Operation(summary = "Marcar item como devolvido", description = "Marca um item como devolvido no sistema")
     @PreAuthorize("hasAuthority('Administrador') or hasAuthority('Professor') or hasAuthority('Guarda')")
-    @Tag(name = "Item", description = "Marca um item como devolvido")
     public ResponseEntity<?> marcarItemComoDevolvido(@PathVariable long itemId,
-                                                        Authentication authentication,
-                                                        @RequestParam String perfil) {
+                                                        Authentication authentication
+                                                ) {
         try {
             Long usuarioIdLogado = null;
+            String perfil;
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
                 usuarioIdLogado = jwtAuth.getToken().getClaim("id");
+                perfil = jwtAuth.getToken().getClaim("perfil");
             } else {
                 usuarioIdLogado = 1L;
+                perfil = "Administrador";
             }
             Item item = itemService.marcarItemComoDevolvido(itemId, usuarioIdLogado, perfil);
             return ResponseEntity.ok(item);
@@ -146,17 +186,20 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
+    @Operation(summary = "Excluir item", description = "Exclui um item do sistema")
     @PreAuthorize("hasAuthority('Administrador') or hasAuthority('Professor') or hasAuthority('Guarda')")
-    @Tag(name = "Item", description = "Exclui um item do sistema")
     public ResponseEntity<?> excluirItem(@PathVariable long itemId,
-                                            Authentication authentication,
-                                            @RequestParam String perfil) {
+                                            Authentication authentication
+                                    ) {
         try {
             Long usuarioIdLogado = null;
+            String perfil;
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
                 usuarioIdLogado = jwtAuth.getToken().getClaim("id");
+                perfil = jwtAuth.getToken().getClaim("perfil");
             } else {
                 usuarioIdLogado = 1L;
+                perfil = "Administrador";
             }
             itemService.excluirItem(itemId, usuarioIdLogado, perfil);
             return ResponseEntity.noContent().build();

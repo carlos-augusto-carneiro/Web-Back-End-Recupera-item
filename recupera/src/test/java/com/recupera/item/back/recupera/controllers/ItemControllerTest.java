@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 import static org.mockito.ArgumentMatchers.*;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.recupera.item.back.recupera.config.SecurityConfig;
+import com.recupera.item.back.recupera.config.GoogleDriveConfig;
 
 @WebMvcTest(ItemController.class)
 @AutoConfigureMockMvc(addFilters = true)
@@ -32,6 +34,9 @@ class ItemControllerTest {
 
     @MockBean
     private ItemService itemService;
+
+    @MockBean
+    private GoogleDriveConfig googleDriveService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -46,6 +51,7 @@ class ItemControllerTest {
         item.setNome("Chave");
         item.setDescricao("Chave do portão");
         item.setDevolvido(false);
+        item.setCaminhoImagem("http://example.com/chave.jpg");
         criarItemDto = new CriarItemDto("Chave", "Chave do portão", null, false);
     }
 
@@ -70,14 +76,22 @@ class ItemControllerTest {
     @Test
     @WithMockUser(authorities = {"Administrador"})
     void deveAdicionarItem() throws Exception {
-        Mockito.when(itemService.adicionarItem(any(), anyLong(), anyString())).thenReturn(item);
-        mockMvc.perform(post("/itens")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(criarItemDto))
-                .param("usuarioIdLogado", "1")
-                .param("perfil", "Administrador"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome").value("Chave"));
+        Mockito.when(itemService.adicionarItem(any(), anyLong(), anyString(), anyString())).thenReturn(item);
+        Mockito.when(googleDriveService.uploadFile(any(), anyString())).thenReturn("http://example.com/chave.jpg");
+
+        MockMultipartFile imagem = new MockMultipartFile(
+            "Imagem", "chave.jpg", "image/jpeg", "fake-image-content".getBytes()
+        );
+        MockMultipartFile itemJson = new MockMultipartFile(
+            "itemDto", "", "application/json", objectMapper.writeValueAsBytes(criarItemDto)
+        );
+
+        mockMvc.perform(multipart("/itens")
+                .file(imagem)
+                .file(itemJson)
+                .with(request -> { request.setMethod("POST"); return request; }))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nome").value("Chave"));
     }
 
     @Test

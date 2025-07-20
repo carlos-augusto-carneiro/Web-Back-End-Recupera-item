@@ -71,7 +71,8 @@ public class UsuarioTest {
     @Test
     void testSenhaforteMensagem() {
         assertEquals("Senha forte", usuario.Senhaforte("Senha@123"));
-        assertTrue(usuario.Senhaforte("senha123").startsWith("Senha fraca"));
+        UsuarioException ex = assertThrows(UsuarioException.class, () -> usuario.Senhaforte("senha123"));
+        assertTrue(ex.getMessage().startsWith("Senha fraca"));
     }
 
     @Test
