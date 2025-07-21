@@ -1,5 +1,9 @@
 # Projeto Recupera
 
+## Atenção o salvar item
+
+O salvar item vai precisar de uma key que não tem como subir no github.
+
 ## Requisitos
 
 - Java 17 ou superior
@@ -11,61 +15,70 @@
 
 1. Clone o repositório:
 ```bash
-git clone [URL_DO_REPOSITÓRIO]
+git clone [URL_DO_REPOSITORIO]
 cd recupera
 ```
 
-2. Crie o arquivo `.env` na raiz do projeto com as seguintes variáveis:
+2. Crie o arquivo `.env` na raiz do diretório `recupera/` com as seguintes variáveis:
 ```env
-# Configurações do PostgreSQL
+# Banco de Dados
 POSTGRES_DB=recupera
-POSTGRES_USER=postgres (Pode adicionar seu proprio usuario)
-POSTGRES_PASSWORD=postgres (Pode adicioanr sua propria senha)
+POSTGRES_USER=carlos
+POSTGRES_PASSWORD=1234
 
-# Configurações da Aplicação Spring Boot
 SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/recupera
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
+SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
 
-# Configurações do Servidor
+# Aplicações
 SERVER_PORT=8080
-
-# Configurações do Swagger
 SPRINGDOC_SWAGGER_UI_PATH=/swagger-ui.html
+
+# Email
+SPRING_MAIL_HOST=smtp.gmail.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=perdidosachadosufc@gmail.com
+SPRING_MAIL_PASSWORD=teaq oyab uxaj adin
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+SPRING_MAIL_PROPERTIES_MAIL_DEBUG=false
+
 ```
 
 ## Executando com Docker
+
+> **Atenção:** Todos os comandos abaixo devem ser executados dentro do diretório `recupera/`.
 
 ### Comandos Docker
 
 1. Construir e iniciar os containers:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 2. Executar em background:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 3. Parar os containers:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 4. Visualizar logs:
 ```bash
-docker-compose logs -f
+docker compose logs -f
 ```
 
 5. Reconstruir um serviço específico:
 ```bash
-docker-compose up -d --build [nome_do_servico]
+docker compose up -d --build [nome_do_servico]
 ```
 
 6. Reconstruir apenas o container da aplicação:
 ```bash
-docker-compose up -d --build app
+docker compose up -d --build app
 ```
 
 ### Portas e Endpoints
@@ -78,7 +91,8 @@ docker-compose up -d --build app
 
 - **recupera-app**: Aplicação Spring Boot
   - Porta: 8080
-  - Dependências: PostgreSQL
+  - Depende do serviço: recupera-postgres
+  - Utiliza o script `wait-for-it.sh` para aguardar o banco de dados iniciar antes de subir a aplicação
 
 - **recupera-postgres**: Banco de dados PostgreSQL
   - Porta: 5432
@@ -95,10 +109,10 @@ docker-compose up -d --build app
 ### Erro de conexão com o banco
 ```bash
 # Verifique se o container do PostgreSQL está rodando
-docker-compose ps
+docker compose ps
 
 # Verifique os logs do PostgreSQL
-docker-compose logs postgres
+docker compose logs postgres
 ```
 
 ### Limpar ambiente Docker
@@ -114,7 +128,7 @@ Para executar o projeto sem Docker:
 
 1. Instale o PostgreSQL localmente
 2. Configure as variáveis de ambiente no seu sistema
-3. Execute o projeto com Maven:
+3. Execute o projeto com Maven (dentro do diretório `recupera/`):
 ```bash
 ./mvnw spring-boot:run
 ```
