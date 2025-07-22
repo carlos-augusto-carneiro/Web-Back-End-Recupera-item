@@ -1,5 +1,12 @@
 package com.recupera.item.back.recupera.config;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collections;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -14,12 +21,6 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collections;
 
 @Service
 public class GoogleDriveConfig {
@@ -64,7 +65,8 @@ public class GoogleDriveConfig {
         
         // O "user" aqui é um identificador para o token armazenado.
         // Em uma aplicação web real, você usaria o ID do usuário logado.
-        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8088).build();
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
     /**
