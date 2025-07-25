@@ -44,10 +44,11 @@ public class SecurityConfig {
         http
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/createdUser").permitAll()
-                .requestMatchers(HttpMethod.POST, "/esqueci-senha").permitAll()
-                .requestMatchers(HttpMethod.PUT, "/redefinir-senha").permitAll()
+                .requestMatchers(HttpMethod.POST, "/usuario/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/usuario/createdUser").permitAll()
+                .requestMatchers(HttpMethod.POST, "/usuario/esqueci-senha").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/usuario/redefinir-senha").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/usuario/confirmar").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated())
@@ -61,7 +62,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Adicione o endereço do seu front-end
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Frontend React
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

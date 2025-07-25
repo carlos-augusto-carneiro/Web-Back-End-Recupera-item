@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOCreatedUsuario;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginRequest;
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Usuário", description = "Controla os usuários do sistema")
 @RestController
+@RequestMapping("/usuario")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;

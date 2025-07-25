@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.recupera.item.back.recupera.service.UsuarioService;
 
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Administrador", description = "Controla dos administradores do sistema")
 @RestController
+@RequestMapping("/admin")
 public class AdminController {
 
     private final UsuarioService usuarioService;
