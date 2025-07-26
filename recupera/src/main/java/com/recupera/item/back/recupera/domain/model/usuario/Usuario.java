@@ -2,6 +2,7 @@ package com.recupera.item.back.recupera.domain.model.usuario;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -10,6 +11,10 @@ import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginRequest;
 import com.recupera.item.back.recupera.domain.enums.Perfis;
 import com.recupera.item.back.recupera.domain.exception.usuario.SenhaFracaException;
 import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
+import com.recupera.item.back.recupera.domain.model.usuario.Item;
+import com.recupera.item.back.recupera.domain.model.usuario.EmailConfirmacaoToken;
+import com.recupera.item.back.recupera.domain.model.usuario.TokenRecuperacaoSenha;
+import jakarta.persistence.CascadeType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +23,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -55,6 +62,7 @@ public class Usuario {
     public String nome;
 
     @Email(message="Email invalido")
+    @Column(unique = true, nullable = false)
     public String email;
 
     public String senha;
@@ -64,6 +72,17 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     public Perfis perfil;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Item> itens;
+
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TokenRecuperacaoSenha> tokensRecuperacao;
+
+
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EmailConfirmacaoToken emailConfirmacaoToken;
     
     private static final Set<Perfis> PERFIS_PERMITIDOS = EnumSet.of(Perfis.Aluno, Perfis.Professor, Perfis.Guarda, Perfis.Administrador);
 

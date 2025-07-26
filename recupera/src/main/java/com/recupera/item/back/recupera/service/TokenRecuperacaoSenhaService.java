@@ -8,10 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.recupera.item.back.recupera.domain.model.usuario.TokenRecuperacaoSenha;
 import com.recupera.item.back.recupera.domain.model.usuario.Usuario;
-import com.recupera.item.back.recupera.domain.repository.IUsuarioRepository;
 import com.recupera.item.back.recupera.domain.repository.ITokenRecuperacaoSenha;
+import com.recupera.item.back.recupera.domain.repository.IUsuarioRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -53,7 +54,7 @@ public class TokenRecuperacaoSenhaService {
 
         tokenRepository.save(tokenSenha);
 
-        String link = "http://localhost:8080/recuperar?token=" + token;
+        String link = "http://localhost:3000/recuperar?token=" + token;
         String corpo = corpoEmailService.gerarCorpoEmailRecuperacao(link);
 
         emailService.enviarEmailRecuperacao(email, "Recuperação de senha", corpo);

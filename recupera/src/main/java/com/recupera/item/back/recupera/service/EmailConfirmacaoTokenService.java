@@ -66,7 +66,7 @@ public class EmailConfirmacaoTokenService {
             throw new IllegalArgumentException("O email do usuário não pode ser nulo ou vazio.");
         }
 
-        String link = "http://localhost:8080/confirmar?token=" + token.getToken();
+        String link = "http://localhost:3000/confirmar?token=" + token.getToken();
         String corpoEmail = corpoEmailService.gerarCorpoEmailConfirmacao(link);
         emailService.enviarEmail(usuario.getEmail(), "Confirme seu e-mail", corpoEmail);
     }

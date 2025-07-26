@@ -1,6 +1,8 @@
 package com.recupera.item.back.recupera.service;
 
 import java.util.List;
+import java.util.Optional;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -51,14 +53,25 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
     public Usuario buscarUsuarioPorEmail(String email) {
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsuarioException("Usuário não encontrado com o email: " + email));
+        
+        try {
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            return usuarioOpt.orElseThrow(() -> new UsuarioException("Usuário não encontrado com o email: " + email));
+        } catch (Exception e) {
+            System.out.println("DEBUG: Erro durante busca: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            throw e;
+        }
     }
     public void deletarUsuarioPorEmail(String email) {
         if (!usuarioRepository.existsByEmail(email)) {
             throw new UsuarioException("Usuário não encontrado com o email: " + email);
         }
-        usuarioRepository.deleteByEmail(email);
+        Usuario usuario = buscarUsuarioPorEmail(email);
+        if (usuario.getPerfil() == Perfis.Administrador) {
+            throw new UsuarioException("Não é possível deletar um usuário com perfil de Administrador");
+        }
+
+        usuarioRepository.deleteById(usuario.getId());
     }
 
     public Usuario promoverParaGuarda(String email) {

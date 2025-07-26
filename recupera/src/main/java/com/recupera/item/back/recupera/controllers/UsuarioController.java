@@ -15,18 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOCreatedUsuario;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginRequest;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOLoginResponse;
 import com.recupera.item.back.recupera.domain.dto.usuario.DTOUpgradeUsuario;
+import com.recupera.item.back.recupera.domain.dto.usuario.EmailRecuperacaoDTO;
 import com.recupera.item.back.recupera.domain.exception.usuario.UsuarioException;
 import com.recupera.item.back.recupera.service.EmailConfirmacaoTokenService;
 import com.recupera.item.back.recupera.service.TokenRecuperacaoSenhaService;
 import com.recupera.item.back.recupera.service.UsuarioService;
+import com.recupera.item.back.recupera.domain.dto.usuario.RedefinirSenhaDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -129,16 +131,23 @@ public class UsuarioController {
     @Transactional
     @Operation(summary = "Esqueci minha senha", description = "Envia um email para o usuário para recuperar a senha")
     @PostMapping("/esqueci-senha")
-    public ResponseEntity<Void> esqueciSenha(@RequestBody String email) {
-        tokenRecuperacaoSenhaService.solicitarRecuperacao(email);
+    public ResponseEntity<Void> esqueciSenha(@RequestBody EmailRecuperacaoDTO email) {
+        if (email == null || email.Email() == null || email.Email().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        String emailValue = email.Email();
+        tokenRecuperacaoSenhaService.solicitarRecuperacao(emailValue);
         return ResponseEntity.ok().build();
     }
 
     @Transactional
     @Operation(summary = "Redefinir senha", description = "Redefine a senha do usuário usando o token")
     @PutMapping("/redefinir-senha")
-    public ResponseEntity<Void> redefinirSenha(@RequestBody String token, @RequestBody String novaSenha) {
-        tokenRecuperacaoSenhaService.redefinirSenha(token, novaSenha);
+    public ResponseEntity<Void> redefinirSenha(@RequestBody RedefinirSenhaDTO senhaDto) {
+        if (senhaDto == null || senhaDto.token() == null || senhaDto.token().isEmpty() || senhaDto.novaSenha() == null || senhaDto.novaSenha().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        tokenRecuperacaoSenhaService.redefinirSenha(senhaDto.token(), senhaDto.novaSenha());
         return ResponseEntity.ok().build();
     }
 }

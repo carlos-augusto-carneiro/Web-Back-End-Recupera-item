@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import com.recupera.item.back.recupera.domain.dto.usuario.DeletarUsuario;
 
 import com.recupera.item.back.recupera.service.UsuarioService;
 
@@ -44,9 +45,12 @@ public class AdminController {
     @PreAuthorize("hasAuthority('Administrador')")
     @Operation(summary = "Deletar usuário", description = "Deleta um usuário pelo email")
     @DeleteMapping("/deletarUsuario")
-    public ResponseEntity<Void> deletarUsuario(@RequestBody String email) {
+    public ResponseEntity<Void> deletarUsuario(@RequestBody DeletarUsuario deletarUsuario) {
         try {
-            usuarioService.deletarUsuarioPorEmail(email);
+            if (deletarUsuario == null || deletarUsuario.Email() == null || deletarUsuario.Email().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            usuarioService.deletarUsuarioPorEmail(deletarUsuario.Email());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -57,9 +61,12 @@ public class AdminController {
     @PreAuthorize("hasAuthority('Administrador')")
     @Operation(summary = "Promover usuário para Guarda", description = "Promove um usuário para o perfil de Guarda")
     @PutMapping("/promoverGuarda")
-    public ResponseEntity<Void> promoverGuarda(@RequestBody String email) {
+    public ResponseEntity<Void> promoverGuarda(@RequestBody DeletarUsuario deletarUsuario) {
         try {
-            usuarioService.promoverParaGuarda(email);
+            if (deletarUsuario == null || deletarUsuario.Email() == null || deletarUsuario.Email().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            usuarioService.promoverParaGuarda(deletarUsuario.Email());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -70,9 +77,12 @@ public class AdminController {
     @PreAuthorize("hasAuthority('Administrador')")
     @Operation(summary = "Promover usuário para Professor", description = "Promove um usuário para o perfil de Professor")
     @PutMapping("/promoverProfessor")
-    public ResponseEntity<Void> promoverProfessor(@RequestBody String email) {
+    public ResponseEntity<Void> promoverProfessor(@RequestBody DeletarUsuario deletarUsuario) {
         try {
-            usuarioService.promoverParaProfessor(email);
+            if (deletarUsuario == null || deletarUsuario.Email() == null || deletarUsuario.Email().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            usuarioService.promoverParaProfessor(deletarUsuario.Email());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -83,9 +93,12 @@ public class AdminController {
     @PreAuthorize("hasAuthority('Administrador')")
     @Operation(summary = "Promover usuário para Aluno", description = "Promove um usuário para o perfil de Aluno")
     @PutMapping("/promoverAluno")
-    public ResponseEntity<Void> promoverAluno(@RequestBody String email) {
+    public ResponseEntity<Void> promoverAluno(@RequestBody DeletarUsuario deletarUsuario) {
         try {
-            usuarioService.promoverParaAluno(email);
+            if (deletarUsuario == null || deletarUsuario.Email() == null || deletarUsuario.Email().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            usuarioService.promoverParaAluno(deletarUsuario.Email());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -96,9 +109,12 @@ public class AdminController {
     @PreAuthorize("hasAuthority('Administrador')")
     @Operation(summary = "Promover usuário para Administrador", description = "Promove um usuário para o perfil de Administrador")
     @PutMapping("/promoverAdministrador")
-    public ResponseEntity<Void> promoverAdministrador(@RequestBody String email) {
+    public ResponseEntity<Void> promoverAdministrador(@RequestBody DeletarUsuario deletarUsuario) {
         try {
-            usuarioService.promoverParaAdministrador(email);
+            if (deletarUsuario == null || deletarUsuario.Email() == null || deletarUsuario.Email().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            usuarioService.promoverParaAdministrador(deletarUsuario.Email());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
