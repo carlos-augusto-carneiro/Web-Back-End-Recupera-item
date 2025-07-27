@@ -2,11 +2,8 @@
 
 set -e
 
-HOST="$1"
-PORT="$2"
-shift 2
-
-echo "Esperando conexão com $HOST:$PORT..."
+HOST=$1
+PORT=$2
 
 until nc -z -v -w30 "$HOST" "$PORT"
 do
@@ -15,5 +12,10 @@ do
 done
 
 echo "PostgreSQL está disponível - iniciando aplicação"
+
+shift 2
+if [ "$1" = "--" ]; then
+  shift 1
+fi
 
 exec "$@"
