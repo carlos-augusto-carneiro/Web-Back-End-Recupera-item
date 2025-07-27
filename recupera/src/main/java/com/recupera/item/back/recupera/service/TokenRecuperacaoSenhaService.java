@@ -54,7 +54,7 @@ public class TokenRecuperacaoSenhaService {
 
         tokenRepository.save(tokenSenha);
 
-        String link = "http://localhost:3000/recuperar?token=" + token;
+        String link = "https://web-front-recupera-item.vercel.app/recuperar?token=" + token;
         String corpo = corpoEmailService.gerarCorpoEmailRecuperacao(link);
 
         emailService.enviarEmailRecuperacao(email, "Recuperação de senha", corpo);

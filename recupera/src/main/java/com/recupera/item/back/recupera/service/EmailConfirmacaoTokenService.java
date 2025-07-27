@@ -66,7 +66,7 @@ public class EmailConfirmacaoTokenService {
             throw new IllegalArgumentException("O email do usuário não pode ser nulo ou vazio.");
         }
 
-        String link = "http://localhost:3000/confirmar?token=" + token.getToken();
+        String link = "https://web-front-recupera-item.vercel.app/confirmar?token=" + token.getToken();
         String corpoEmail = corpoEmailService.gerarCorpoEmailConfirmacao(link);
         emailService.enviarEmail(usuario.getEmail(), "Confirme seu e-mail", corpoEmail);
     }
