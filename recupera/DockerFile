@@ -6,7 +6,7 @@ RUN mvn package -DskipTests
 FROM openjdk:17-slim
 RUN apt-get update && apt-get install -y netcat-openbsd
 COPY --from=build /usr/src/app/target/recupera-0.0.1-SNAPSHOT.jar /app/app.jar
-COPY wait-for-it.sh /app/wait-for-it.sh
+COPY recupera/wait-for-it.sh /app/wait-for-it.sh
 RUN chmod +x /app/wait-for-it.sh
 EXPOSE 8080
 CMD ["sh", "-c", "/app/wait-for-it.sh postgres:5432 && java -jar /app/app.jar"]
