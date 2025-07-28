@@ -31,7 +31,7 @@ public class GoogleDriveConfig {
     // Em produção, use um armazenamento seguro como um banco de dados.
     private static final java.io.File CREDENTIALS_FOLDER = new java.io.File("credentials");
     //private static final String CLIENT_SECRETS_FILE_PATH = "/client_secrets.json.json";
-    private static final String CLIENT_SECRETS_FILE_PATH = "/etc/secrets/client_secrets.json.json";
+    private static final String CLIENT_SECRETS_FILE_PATH = "/etc/secrets/webtrab-3db415c0495a.json";
 
     private static final HttpTransport HTTP_TRANSPORT;
     static {
