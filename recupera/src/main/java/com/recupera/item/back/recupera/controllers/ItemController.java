@@ -39,6 +39,8 @@ public class ItemController {
     @Autowired
     private GoogleDriveService googleDriveService;
 
+    private final String GOOGLE_DRIVE= "1HtdhlodxJXfjAnvo06w1tGBiPFzgMST_";
+
     @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Listar itens por usuário", description = "Lista todos os itens associados a um usuário específico")
     @PreAuthorize("hasAuthority('Administrador')")
@@ -108,7 +110,7 @@ public class ItemController {
             System.out.println("file: " + (file != null ? file.getOriginalFilename() : "null"));
             ObjectMapper mapper = new ObjectMapper();
             CriarItemDto itemDto = mapper.readValue(itemDtoJson, CriarItemDto.class);
-            String url = googleDriveService.uploadFile(file, "1HtdhlodxJXfjAnvo06w1tGBiPFzgMST_");
+            String url = googleDriveService.uploadFile(file, GOOGLE_DRIVE);
             Long usuarioIdLogado = null;
             String perfil;
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
