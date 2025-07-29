@@ -6,15 +6,19 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 
@@ -25,14 +29,8 @@ public class GoogleDriveConfig {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String CLIENT_SECRETS_FILE_PATH = "/etc/secrets/webtrab-3db415c0495a.json";
 
-    private static final HttpTransport HTTP_TRANSPORT;
-    static {
-        try {
-            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        } catch (GeneralSecurityException | IOException e) {
-            throw new RuntimeException("Não foi possível inicializar o HTTP Transport", e);
-        }
-    }
+    @Autowired
+    private Drive driveService;
 
     /**
      * Cria um objeto Drive autorizado usando o fluxo OAuth 2.0.
@@ -80,5 +78,31 @@ public class GoogleDriveConfig {
         return new Drive.Builder(httpTransport, JSON_FACTORY, new HttpCredentialsAdapter(credentials))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+    }
+
+    /**
+     * Faz o upload de um arquivo para o Google Drive.
+     * @param multipartFile O arquivo a ser enviado.
+     * @param folderId O ID da pasta no Drive onde o arquivo será salvo (opcional).
+     * @return O link de visualização do arquivo no Drive.
+     * @throws Exception
+     */
+    public String uploadFile(MultipartFile multipartFile, String folderId) throws Exception {
+        File fileMetadata = new File();
+        fileMetadata.setName(multipartFile.getOriginalFilename());
+        if (folderId != null && !folderId.isEmpty()) {
+            fileMetadata.setParents(Collections.singletonList(folderId));
+        }
+
+        InputStreamContent mediaContent = new InputStreamContent(
+            multipartFile.getContentType(),
+            multipartFile.getInputStream()
+        );
+
+        File file = driveService.files().create(fileMetadata, mediaContent)
+                .setFields("id, webViewLink")
+                .execute();
+
+        return file.getWebViewLink();
     }
 }

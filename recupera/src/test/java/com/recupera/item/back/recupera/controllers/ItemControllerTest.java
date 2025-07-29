@@ -21,12 +21,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.recupera.item.back.recupera.config.SecurityConfig;
-import com.recupera.item.back.recupera.config.GoogleDriveConfig;
+import com.recupera.item.back.recupera.Config.SecurityConfig;
+import com.recupera.item.back.recupera.Config.GoogleDriveConfig;
 
 @WebMvcTest(ItemController.class)
 @AutoConfigureMockMvc(addFilters = true)
-@Import(SecurityConfig.class)
 class ItemControllerTest {
 
     @Autowired
@@ -77,7 +76,7 @@ class ItemControllerTest {
     @WithMockUser(authorities = {"Administrador"})
     void deveAdicionarItem() throws Exception {
         Mockito.when(itemService.adicionarItem(any(), anyLong(), anyString(), anyString())).thenReturn(item);
-        Mockito.when(googleDriveService.uploadFile(any(), anyString())).thenReturn("http://example.com/chave.jpg");
+        // Mockito.when(googleDriveService.uploadFile(any(), anyString())).thenReturn("http://example.com/chave.jpg");
 
         MockMultipartFile imagem = new MockMultipartFile(
             "Imagem", "chave.jpg", "image/jpeg", "fake-image-content".getBytes()

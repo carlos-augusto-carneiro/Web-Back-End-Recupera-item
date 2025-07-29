@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.recupera.item.back.recupera.config.GoogleDriveConfig;
+import com.recupera.item.back.recupera.Config.GoogleDriveConfig;
 import com.recupera.item.back.recupera.domain.dto.usuario.CriarItemDto;
 import com.recupera.item.back.recupera.domain.model.usuario.Item;
 import com.recupera.item.back.recupera.service.ItemService;
