@@ -111,6 +111,7 @@ public class ItemController {
             System.out.println("itemDtoJson: " + itemDtoJson);
             System.out.println("file: " + (file != null ? file.getOriginalFilename() : "null"));
             ObjectMapper mapper = new ObjectMapper();
+            googleDriveService.testarAcessoPasta(googleDriveFolderId);
             CriarItemDto itemDto = mapper.readValue(itemDtoJson, CriarItemDto.class);
             String url = googleDriveService.uploadFile(file, this.googleDriveFolderId);
             Long usuarioIdLogado = null;

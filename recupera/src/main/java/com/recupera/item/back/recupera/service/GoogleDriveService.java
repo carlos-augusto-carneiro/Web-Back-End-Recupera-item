@@ -1,5 +1,6 @@
 package com.recupera.item.back.recupera.service;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,4 +44,12 @@ public class GoogleDriveService {
 
         return file.getWebViewLink();
     }
+
+    public void testarAcessoPasta(String folderId) throws IOException {
+    File pasta = driveService.files().get(folderId)
+        .setFields("id, name")
+        .execute();
+
+    System.out.println("Consegui acessar a pasta: " + pasta.getName());
+}
 }
