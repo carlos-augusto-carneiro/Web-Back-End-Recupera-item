@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.mock.web.MockMultipartFile;
@@ -21,11 +20,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.recupera.item.back.recupera.Config.SecurityConfig;
-import com.recupera.item.back.recupera.Config.GoogleDriveConfig;
-
 @WebMvcTest(ItemController.class)
-@AutoConfigureMockMvc(addFilters = true)
+@AutoConfigureMockMvc(addFilters = false)
 class ItemControllerTest {
 
     @Autowired
@@ -33,9 +29,6 @@ class ItemControllerTest {
 
     @MockBean
     private ItemService itemService;
-
-    @MockBean
-    private GoogleDriveConfig googleDriveService;
 
     @Autowired
     private ObjectMapper objectMapper;

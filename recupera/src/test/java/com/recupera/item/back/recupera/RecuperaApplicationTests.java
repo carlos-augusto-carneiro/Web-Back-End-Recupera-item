@@ -6,8 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootTest
 @Import({
-    com.recupera.item.back.recupera.config.MailSenderTestConfig.class,
-    com.recupera.item.back.recupera.config.GoogleDriveConfigTestConfig.class
+    com.recupera.item.back.recupera.config.MailSenderTestConfig.class
 })
 class RecuperaApplicationTests {
 
