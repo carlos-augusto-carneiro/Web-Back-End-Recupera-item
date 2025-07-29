@@ -27,6 +27,7 @@ import com.recupera.item.back.recupera.service.ItemService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/itens")
@@ -39,7 +40,8 @@ public class ItemController {
     @Autowired
     private GoogleDriveService googleDriveService;
 
-    private final String GOOGLE_DRIVE= "1HtdhlodxJXfjAnvo06w1tGBiPFzgMST_";
+    @Value("${google.drive.folder-id:1HtdhlodxJXfjAnvo06w1tGBiPFzgMST_}")
+    private String googleDriveFolderId;
 
     @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Listar itens por usuário", description = "Lista todos os itens associados a um usuário específico")
@@ -110,7 +112,7 @@ public class ItemController {
             System.out.println("file: " + (file != null ? file.getOriginalFilename() : "null"));
             ObjectMapper mapper = new ObjectMapper();
             CriarItemDto itemDto = mapper.readValue(itemDtoJson, CriarItemDto.class);
-            String url = googleDriveService.uploadFile(file, GOOGLE_DRIVE);
+            String url = googleDriveService.uploadFile(file, this.googleDriveFolderId);
             Long usuarioIdLogado = null;
             String perfil;
             if (authentication instanceof JwtAuthenticationToken jwtAuth) {
