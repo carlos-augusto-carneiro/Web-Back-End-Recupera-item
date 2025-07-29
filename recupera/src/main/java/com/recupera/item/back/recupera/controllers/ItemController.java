@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.recupera.item.back.recupera.Config.GoogleDriveConfig;
+import com.recupera.item.back.recupera.service.GoogleDriveService;
 import com.recupera.item.back.recupera.domain.dto.usuario.CriarItemDto;
 import com.recupera.item.back.recupera.domain.model.usuario.Item;
 import com.recupera.item.back.recupera.service.ItemService;
@@ -37,7 +37,7 @@ public class ItemController {
     private ItemService itemService;
 
     @Autowired
-    private GoogleDriveConfig googleDriveService;
+    private GoogleDriveService googleDriveService;
 
     @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Listar itens por usuário", description = "Lista todos os itens associados a um usuário específico")
